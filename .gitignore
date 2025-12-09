@@ -4,7 +4,6 @@
 zig-cache/**
 zig-cache/
 zig-out/
-.zig-cache/z/**
 *.o
 *.obj
 *.exe
