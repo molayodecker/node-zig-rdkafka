@@ -7,7 +7,7 @@
   "scripts": {
     "build": "zig build",
     "test": "node test/basic.test.js",
-    "preinstall": "zig build"
+    "install": "zig build || echo 'Native build skipped - requires Zig and librdkafka'"
   },
   "keywords": [
     "kafka",

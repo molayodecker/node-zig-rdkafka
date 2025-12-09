@@ -36,7 +36,9 @@ try {
 
 // Test 5: Producer methods exist
 try {
-    const producer = new Producer();
+    const producer = new Producer({
+        'bootstrap.servers': 'localhost:9092'
+    });
     if (typeof producer.connect === 'function' &&
         typeof producer.produce === 'function' &&
         typeof producer.flush === 'function' &&
@@ -46,12 +48,15 @@ try {
         console.log('✗ Test 5: Producer missing some methods');
     }
 } catch (error) {
-    console.log(`⚠ Test 5: Could not test producer methods`);
+    console.log(`⚠ Test 5: Could not test producer methods: ${error.message}`);
 }
 
 // Test 6: Consumer methods exist
 try {
-    const consumer = new Consumer();
+    const consumer = new Consumer({
+        'bootstrap.servers': 'localhost:9092',
+        'group.id': 'test-group'
+    });
     if (typeof consumer.connect === 'function' &&
         typeof consumer.subscribe === 'function' &&
         typeof consumer.consume === 'function' &&
@@ -62,7 +67,7 @@ try {
         console.log('✗ Test 6: Consumer missing some methods');
     }
 } catch (error) {
-    console.log(`⚠ Test 6: Could not test consumer methods`);
+    console.log(`⚠ Test 6: Could not test consumer methods: ${error.message}`);
 }
 
 console.log('\nTests completed!');

@@ -4,11 +4,20 @@ const c = @cImport({
     @cInclude("librdkafka/rdkafka.h");
 });
 
+// Error string buffer size for librdkafka error messages
+const ERROR_STRING_SIZE: usize = 512;
+
 // N-API module initialization
 export fn napi_register_module_v1(env: c.napi_env, exports: c.napi_value) c.napi_value {
-    registerProducer(env, exports) catch {};
-    registerConsumer(env, exports) catch {};
-    registerVersion(env, exports) catch {};
+    registerProducer(env, exports) catch |err| {
+        std.debug.print("Failed to register Producer: {}\n", .{err});
+    };
+    registerConsumer(env, exports) catch |err| {
+        std.debug.print("Failed to register Consumer: {}\n", .{err});
+    };
+    registerVersion(env, exports) catch |err| {
+        std.debug.print("Failed to register version function: {}\n", .{err});
+    };
     return exports;
 }
 
@@ -86,7 +95,7 @@ fn producerConstructor(env: c.napi_env, info: c.napi_callback_info) callconv(.C)
     }
     
     // Create producer instance
-    var errstr: [512]u8 = undefined;
+    var errstr: [ERROR_STRING_SIZE]u8 = undefined;
     producer_data.rk = c.rd_kafka_new(
         c.RD_KAFKA_PRODUCER,
         producer_data.conf,
@@ -126,7 +135,8 @@ fn parseConfig(env: c.napi_env, config: c.napi_value, conf: ?*c.rd_kafka_conf_t)
     _ = config;
     
     // Set some default configurations
-    var errstr: [512]u8 = undefined;
+    // TODO: Parse JavaScript config object and apply settings
+    var errstr: [ERROR_STRING_SIZE]u8 = undefined;
     _ = c.rd_kafka_conf_set(conf, "bootstrap.servers", "localhost:9092", &errstr, errstr.len);
 }
 
@@ -178,7 +188,7 @@ fn consumerConstructor(env: c.napi_env, info: c.napi_callback_info) callconv(.C)
     }
     
     // Create consumer instance
-    var errstr: [512]u8 = undefined;
+    var errstr: [ERROR_STRING_SIZE]u8 = undefined;
     consumer_data.rk = c.rd_kafka_new(
         c.RD_KAFKA_CONSUMER,
         consumer_data.conf,
@@ -218,7 +228,8 @@ fn parseConsumerConfig(env: c.napi_env, config: c.napi_value, conf: ?*c.rd_kafka
     _ = config;
     
     // Set some default configurations
-    var errstr: [512]u8 = undefined;
+    // TODO: Parse JavaScript config object and apply settings
+    var errstr: [ERROR_STRING_SIZE]u8 = undefined;
     _ = c.rd_kafka_conf_set(conf, "bootstrap.servers", "localhost:9092", &errstr, errstr.len);
     _ = c.rd_kafka_conf_set(conf, "group.id", "default-group", &errstr, errstr.len);
 }
