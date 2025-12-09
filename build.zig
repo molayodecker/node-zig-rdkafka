@@ -20,10 +20,17 @@ pub fn build(b: *std.Build) void {
     // Node / N-API headers (via node-addon-api)
     lib.root_module.addIncludePath(b.path("node_modules/node-addon-api"));
     lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/Cellar/node/25.2.1/include/node" });
+    lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/include" });
 
     // Homebrew headers/libs (Apple Silicon default)
     lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/include" });
     lib.addLibraryPath(.{ .cwd_relative = "/opt/homebrew/lib" });
+
+    // Add the shim.c file with proper include paths
+    lib.addCSourceFile(.{
+        .file = b.path("src/shim.c"),
+        .flags = &.{},
+    });
 
     // Link libs
     lib.linkSystemLibrary("rdkafka");
