@@ -1,0 +1,35 @@
+{
+  "name": "node-zig-rdkafka",
+  "version": "0.1.0",
+  "description": "A fast, safe, Zig-powered rewrite of node-rdkafka using N-API and librdkafka.",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "zig build",
+    "test": "node test/basic.test.js",
+    "preinstall": "zig build"
+  },
+  "keywords": [
+    "kafka",
+    "rdkafka",
+    "librdkafka",
+    "zig",
+    "napi",
+    "producer",
+    "consumer",
+    "streaming"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/molayodecker/node-zig-rdkafka.git"
+  },
+  "bugs": {
+    "url": "https://github.com/molayodecker/node-zig-rdkafka/issues"
+  },
+  "homepage": "https://github.com/molayodecker/node-zig-rdkafka#readme"
+}
