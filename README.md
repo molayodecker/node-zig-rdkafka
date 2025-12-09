@@ -320,11 +320,22 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Roadmap
 
-- [ ] Complete producer implementation
-- [ ] Complete consumer implementation
+- [ ] Complete producer implementation with full config parsing
+- [ ] Complete consumer implementation with full config parsing
 - [ ] Admin client support
 - [ ] Streaming API
 - [ ] Performance benchmarks
-- [ ] Comprehensive test suite
-- [ ] CI/CD pipeline
+- [ ] Comprehensive test suite with Kafka integration
+- [x] Basic CI/CD pipeline
 - [ ] npm package publishing
+
+## Current Limitations
+
+This is an initial implementation with the following known limitations:
+
+- **Configuration Parsing**: Currently uses default configurations. JavaScript config objects are not yet parsed and applied to librdkafka. This is marked as TODO in `src/main.zig`.
+- **Producer Methods**: The `produce()` method doesn't yet call the native implementation.
+- **Consumer Methods**: The `consume()` method doesn't yet call the native implementation.
+- **Error Details**: Native error messages from librdkafka are not yet included in JavaScript exceptions.
+
+These will be addressed in future iterations. Pull requests are welcome!
