@@ -1,0 +1,32 @@
+# Zig build artifacts
+zig-cache/
+zig-out/
+*.o
+*.obj
+*.exe
+*.wasm
+*.pdb
+*.lib
+*.dll
+*.so
+*.a
+*.rlib
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+.DS_Store
+Thumbs.db
+
+# Dependency management artifacts (if applicable)
+# For example, if you use a package manager that stores its dependencies in a specific directory
+# deps/ 
+
+# Other temporary files
+tmp/
+log/
+*.log
