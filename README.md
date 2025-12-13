@@ -20,6 +20,12 @@ This project removes the old C++/NAN layer in favor of a cleaner, safer Zig impl
 
 This project is in early development.
 
+**CI/CD Status:**
+- ✅ macOS tests (18.x, 20.x, 22.x) - All passing
+- ✅ Ubuntu tests (18.x, 20.x, 22.x) - All passing  
+- ✅ Lint and Code Quality checks - Passing
+- ⚠️ Windows - Disabled due to Zig MSVC integration issue (see Known Issues)
+
 Currently implemented:
 
 - N-API bridge written in Zig
@@ -244,3 +250,31 @@ cd node-zig-rdkafka
 npm install
 zig build
 ```
+
+---
+
+## Known Issues
+
+### Windows Build Hang
+
+Windows GitHub Actions builds are currently disabled due to a Zig language issue where the `@cImport` directive hangs indefinitely when attempting to compile C headers using MSVC's `cl.exe` compiler.
+
+**Affected:** Windows GitHub Actions CI/CD only
+**Status:** Unresolved - requires investigation of Zig's MSVC integration
+**Workaround:** Build locally on Windows with Zig and MSVC, or use Clang on Windows
+
+Possible solutions to investigate:
+1. Use Clang instead of MSVC for C compilation on Windows
+2. Implement manual FFI bindings instead of @cImport
+3. Debug Zig's cl.exe invocation and environment configuration
+4. File an issue with the Zig language project if this is a known bug
+
+---
+
+## Contributing
+
+Contributions are welcome! Please:
+1. Test locally on macOS and/or Linux before submitting
+2. Ensure all tests pass: `npm test`
+3. Run linter: `npm run lint`
+4. Update README if adding new features
