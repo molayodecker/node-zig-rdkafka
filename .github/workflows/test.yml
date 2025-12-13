@@ -29,6 +29,16 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Install Node headers (macOS)
+        run: |
+          # Find where the setup-node action installed Node
+          NODE_PATH=$(which node)
+          NODE_DIR=$(dirname $(dirname "$NODE_PATH"))
+          echo "Node directory: $NODE_DIR"
+          ls -la "$NODE_DIR/include/node/" 2>/dev/null | grep node_api || echo "Headers not found in default location"
+          # Try to find node_api.h anywhere
+          find /Users/runner -name "node_api.h" 2>/dev/null | head -3 || echo "Not found on system"
+
       - name: Install librdkafka (macOS)
         run: brew install librdkafka
 
