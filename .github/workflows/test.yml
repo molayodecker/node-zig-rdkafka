@@ -73,10 +73,10 @@ jobs:
       - name: Verify addon was built (macOS)
         run: |
           ls -laR zig-out/ || echo "zig-out not found"
-          # If .dylib file exists, create .node symlink
+          # If .dylib file exists, copy to .node
           if [ -f zig-out/lib/libaddon.dylib ]; then
-            ln -sf libaddon.dylib zig-out/lib/libaddon.node || true
-            echo "Created symlink from .dylib to .node"
+            cp zig-out/lib/libaddon.dylib zig-out/lib/libaddon.node || true
+            echo "Copied .dylib to .node"
           fi
           ls -la zig-out/lib/ 2>/dev/null || echo "zig-out/lib not found"
 
@@ -150,14 +150,10 @@ jobs:
       - name: Verify addon was built (Ubuntu)
         run: |
           ls -laR zig-out/ || echo "zig-out not found"
-          # If .so file exists, create .node symlink
+          # Create absolute symlink or just copy if .so file exists
           if [ -f zig-out/lib/libaddon.so ]; then
-            ln -sf libaddon.so zig-out/lib/libaddon.node || true
-            echo "Created symlink from .so to .node"
-          fi
-          # Also try .a (static lib)
-          if [ -f "zig-out/lib/libaddon.a" ]; then
-            echo "Found static lib .a"
+            cp zig-out/lib/libaddon.so zig-out/lib/libaddon.node || true
+            echo "Copied .so to .node"
           fi
           ls -la zig-out/lib/ 2>/dev/null || echo "zig-out/lib not found"
 
