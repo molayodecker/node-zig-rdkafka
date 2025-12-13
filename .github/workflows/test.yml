@@ -242,7 +242,7 @@ jobs:
       - name: Build addon
         run: npm run build
         env:
-          INCLUDE: "C:\include\node;%INCLUDE%"
+          INCLUDE: "C:\\include\\node;%INCLUDE%"
 
       - name: Verify addon was built (Windows)
         shell: powershell
