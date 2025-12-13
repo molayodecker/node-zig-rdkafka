@@ -289,24 +289,27 @@ jobs:
           npm run build
 
       - name: Verify addon was built (Windows)
-        shell: powershell
+        shell: cmd
         run: |
-          Write-Host "Looking for built addon..."
-          Get-ChildItem -Path "zig-out" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+          echo "Looking for built addon..."
+          dir /s "zig-out\lib\"
           
-          # Find any .dll file and copy it to .node
-          $DllFile = Get-ChildItem -Path "zig-out" -Recurse -Filter "*.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($DllFile) {
-            Write-Host "Found DLL at: $($DllFile.FullName)"
-            $TargetNode = Join-Path $DllFile.Directory "libaddon.node"
-            Copy-Item -Path $DllFile.FullName -Destination $TargetNode -Force
-            Write-Host "Copied to: $TargetNode"
-          } else {
-            Write-Host "WARNING: No .dll file found"
-          }
+          if exist "zig-out\lib\addon.dll" (
+            echo Found addon.dll, copying to libaddon.node
+            copy "zig-out\lib\addon.dll" "zig-out\lib\libaddon.node"
+          ) else if exist "zig-out\lib\libaddon.dll" (
+            echo Found libaddon.dll, copying to libaddon.node
+            copy "zig-out\lib\libaddon.dll" "zig-out\lib\libaddon.node"
+          ) else (
+            echo Looking for any .dll file...
+            for /r "zig-out\lib" %%F in (*.dll) do (
+              echo Found: %%F
+              copy "%%F" "zig-out\lib\libaddon.node"
+            )
+          )
           
-          Write-Host "Final contents of zig-out/lib:"
-          Get-ChildItem -Path "zig-out\lib" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.FullName)" }
+          echo Final contents of zig-out\lib:
+          dir "zig-out\lib\"
 
       - name: Run tests
         run: npm test
