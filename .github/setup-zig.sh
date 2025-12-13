@@ -79,7 +79,15 @@ echo "Cleaning up..."
 rm -rf /tmp/zig.tar.xz /tmp/zig-extract
 
 echo "Adding Zig to PATH..."
-export PATH="/opt/zig:$PATH"
+# Use GitHub Actions environment file to persist PATH across steps
+if [ -n "$GITHUB_PATH" ]; then
+  echo "/opt/zig" >> "$GITHUB_PATH"
+  echo "Added /opt/zig to GITHUB_PATH"
+else
+  # Fallback for local testing
+  export PATH="/opt/zig:$PATH"
+  echo "Added /opt/zig to PATH (local mode)"
+fi
 
 echo "Verifying Zig installation..."
 /opt/zig/zig version
