@@ -176,7 +176,7 @@ jobs:
         shell: powershell
         run: |
           $ZigVersion = "0.15.2"
-          $ZigUrl = "https://ziglang.org/download/$ZigVersion/zig-windows-x86_64-$ZigVersion.zip"
+          $ZigUrl = "https://ziglang.org/download/$ZigVersion/zig-x86_64-windows-$ZigVersion.zip"
           $ZigPath = "$env:TEMP\zig-windows.zip"
           $ZigInstall = "C:\zig"
           
@@ -186,7 +186,7 @@ jobs:
           Write-Host "Extracting Zig"
           Expand-Archive -Path $ZigPath -DestinationPath $env:TEMP
           
-          $ExtractedPath = Get-ChildItem -Path "$env:TEMP" -Filter "zig-windows-*" -Directory | Select-Object -First 1
+          $ExtractedPath = Get-ChildItem -Path "$env:TEMP" -Filter "zig-x86_64-windows-*" -Directory | Select-Object -First 1
           if ($ExtractedPath) {
             Move-Item -Path $ExtractedPath.FullName -Destination $ZigInstall -Force
           }
