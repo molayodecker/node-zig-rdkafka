@@ -8,14 +8,28 @@ if command -v zig &> /dev/null; then
   exit 0
 fi
 
-ZIG_VERSION="0.15.2"
 ZIG_ARCH="${1:-x86_64}"
 OS="${2:-linux}"
 
+echo "Setting up Zig for $OS ($ZIG_ARCH)..."
+
+# Try system package manager first
 if [ "$OS" = "linux" ]; then
-  ZIG_URL="https://github.com/ziglang/zig/releases/download/${ZIG_VERSION}/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz"
+  if sudo apt-get update && sudo apt-get install -y zig 2>/dev/null; then
+    echo "Zig installed via apt-get"
+    zig version
+    exit 0
+  fi
+fi
+
+# If system installation fails, use the official pre-built binaries
+# These are available at https://ziglang.org/download
+ZIG_VERSION="0.15.2"
+
+if [ "$OS" = "linux" ]; then
+  ZIG_URL="https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_ARCH}-linux-${ZIG_VERSION}.tar.xz"
 elif [ "$OS" = "macos" ]; then
-  ZIG_URL="https://github.com/ziglang/zig/releases/download/${ZIG_VERSION}/zig-macos-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz"
+  ZIG_URL="https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_ARCH}-macos-${ZIG_VERSION}.tar.xz"
 else
   echo "Unsupported OS: $OS"
   exit 1
