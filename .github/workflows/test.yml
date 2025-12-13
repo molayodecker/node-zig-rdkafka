@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-12, macos-13, macos-14]
+        os: [macos-14]
         node-version: [18.x, 20.x, 22.x]
     steps:
       - uses: actions/checkout@v4
@@ -55,48 +55,8 @@ jobs:
 
       - name: Set up Zig (Ubuntu)
         run: |
-          if ! command -v zig &> /dev/null; then
-            # Try apt-get first (faster, simpler)
-            sudo apt-get update > /dev/null 2>&1
-            if sudo apt-get install -y zig 2>/dev/null; then
-              echo "Zig installed via apt-get"
-            else
-              # Fallback: Download from GitHub releases
-              ZIG_VERSION="0.15.2"
-              ZIG_ARCH="x86_64"
-              ZIG_URL="https://github.com/ziglang/zig/releases/download/${ZIG_VERSION}/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz"
-              
-              # Retry up to 3 times
-              for attempt in 1 2 3; do
-                echo "Download attempt $attempt/3..."
-                if curl -f -L -o /tmp/zig.tar.xz "$ZIG_URL"; then
-                  echo "Download successful"
-                  break
-                fi
-                if [ $attempt -lt 3 ]; then
-                  echo "Download failed, retrying in 10 seconds..."
-                  sleep 10
-                fi
-              done
-              
-              if [ ! -f /tmp/zig.tar.xz ]; then
-                echo "Failed to download Zig after 3 attempts"
-                exit 1
-              fi
-              
-              tar -xf /tmp/zig.tar.xz -C /tmp/
-              # Find the extracted directory (may vary)
-              ZIG_DIR=$(ls -d /tmp/zig-* 2>/dev/null | head -1)
-              if [ -z "$ZIG_DIR" ]; then
-                echo "Failed to find extracted Zig directory"
-                exit 1
-              fi
-              sudo mv "$ZIG_DIR" /opt/zig
-              sudo ln -sf /opt/zig/zig /usr/local/bin/zig
-              rm /tmp/zig.tar.xz
-            fi
-          fi
-          zig version
+          chmod +x .github/setup-zig.sh
+          .github/setup-zig.sh x86_64 linux
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -128,48 +88,8 @@ jobs:
 
       - name: Set up Zig (Ubuntu)
         run: |
-          if ! command -v zig &> /dev/null; then
-            # Try apt-get first (faster, simpler)
-            sudo apt-get update > /dev/null 2>&1
-            if sudo apt-get install -y zig 2>/dev/null; then
-              echo "Zig installed via apt-get"
-            else
-              # Fallback: Download from GitHub releases
-              ZIG_VERSION="0.15.2"
-              ZIG_ARCH="x86_64"
-              ZIG_URL="https://github.com/ziglang/zig/releases/download/${ZIG_VERSION}/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz"
-              
-              # Retry up to 3 times
-              for attempt in 1 2 3; do
-                echo "Download attempt $attempt/3..."
-                if curl -f -L -o /tmp/zig.tar.xz "$ZIG_URL"; then
-                  echo "Download successful"
-                  break
-                fi
-                if [ $attempt -lt 3 ]; then
-                  echo "Download failed, retrying in 10 seconds..."
-                  sleep 10
-                fi
-              done
-              
-              if [ ! -f /tmp/zig.tar.xz ]; then
-                echo "Failed to download Zig after 3 attempts"
-                exit 1
-              fi
-              
-              tar -xf /tmp/zig.tar.xz -C /tmp/
-              # Find the extracted directory (may vary)
-              ZIG_DIR=$(ls -d /tmp/zig-* 2>/dev/null | head -1)
-              if [ -z "$ZIG_DIR" ]; then
-                echo "Failed to find extracted Zig directory"
-                exit 1
-              fi
-              sudo mv "$ZIG_DIR" /opt/zig
-              sudo ln -sf /opt/zig/zig /usr/local/bin/zig
-              rm /tmp/zig.tar.xz
-            fi
-          fi
-          zig version
+          chmod +x .github/setup-zig.sh
+          .github/setup-zig.sh x86_64 linux
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -179,7 +99,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run eslint
+      - name: Run lint
         run: npm run lint --if-present
 
   code-quality:
@@ -190,48 +110,8 @@ jobs:
 
       - name: Set up Zig (Ubuntu)
         run: |
-          if ! command -v zig &> /dev/null; then
-            # Try apt-get first (faster, simpler)
-            sudo apt-get update > /dev/null 2>&1
-            if sudo apt-get install -y zig 2>/dev/null; then
-              echo "Zig installed via apt-get"
-            else
-              # Fallback: Download from GitHub releases
-              ZIG_VERSION="0.15.2"
-              ZIG_ARCH="x86_64"
-              ZIG_URL="https://github.com/ziglang/zig/releases/download/${ZIG_VERSION}/zig-linux-${ZIG_ARCH}-${ZIG_VERSION}.tar.xz"
-              
-              # Retry up to 3 times
-              for attempt in 1 2 3; do
-                echo "Download attempt $attempt/3..."
-                if curl -f -L -o /tmp/zig.tar.xz "$ZIG_URL"; then
-                  echo "Download successful"
-                  break
-                fi
-                if [ $attempt -lt 3 ]; then
-                  echo "Download failed, retrying in 10 seconds..."
-                  sleep 10
-                fi
-              done
-              
-              if [ ! -f /tmp/zig.tar.xz ]; then
-                echo "Failed to download Zig after 3 attempts"
-                exit 1
-              fi
-              
-              tar -xf /tmp/zig.tar.xz -C /tmp/
-              # Find the extracted directory (may vary)
-              ZIG_DIR=$(ls -d /tmp/zig-* 2>/dev/null | head -1)
-              if [ -z "$ZIG_DIR" ]; then
-                echo "Failed to find extracted Zig directory"
-                exit 1
-              fi
-              sudo mv "$ZIG_DIR" /opt/zig
-              sudo ln -sf /opt/zig/zig /usr/local/bin/zig
-              rm /tmp/zig.tar.xz
-            fi
-          fi
-          zig version
+          chmod +x .github/setup-zig.sh
+          .github/setup-zig.sh x86_64 linux
 
       - name: Check Zig formatting
         run: zig fmt --check src/
