@@ -40,7 +40,8 @@ More features will be added gradually.
 
 - [Zig](https://ziglang.org/download/) 0.15.2 or later
 - Node.js 18 or newer
-- macOS (Linux support coming soon)
+- **Supported Platforms:** macOS, Linux
+- **Windows:** Not currently supported (see Known Issues)
 - [Homebrew](https://brew.sh/) (for macOS dependencies)
 
 ---
@@ -194,8 +195,8 @@ rm -rf zig-cache zig-out
 
 - ✅ macOS (Apple Silicon M1/M2/M3)
 - ✅ macOS (Intel x86_64)
-- ✅ Windows (via vcpkg)
-- 🚧 Linux (planned)
+- ✅ Linux (x86_64)
+- ❌ Windows (not currently supported - see Known Issues)
 
 ### Platform-Specific Setup
 
@@ -211,30 +212,7 @@ zig build
 
 #### Windows
 
-1. Install [vcpkg](https://github.com/microsoft/vcpkg):
-
-   ```powershell
-   git clone https://github.com/microsoft/vcpkg
-   cd vcpkg
-   .\bootstrap-vcpkg.bat
-   ```
-
-2. Install librdkafka:
-
-   ```powershell
-   .\vcpkg install librdkafka:x64-windows
-   ```
-
-3. Install Zig from [ziglang.org](https://ziglang.org/download/)
-
-4. Build the addon:
-
-   ```powershell
-   git clone https://github.com/molayodecker/node-zig-rdkafka.git
-   cd node-zig-rdkafka
-   npm install
-   zig build
-   ```
+**Windows is not currently supported.** There is an unresolved issue with Zig's MSVC integration that causes the build to hang. See [Known Issues](#known-issues) for details and possible workarounds.
 
 #### Linux
 
