@@ -7,6 +7,7 @@ This document validates the GitHub Actions CI/CD workflow for node-zig-rdkafka.
 All tests have been validated locally on macOS:
 
 ### Build Status
+
 ```
 ✅ npm run build
    - Zig compilation: SUCCESS
@@ -14,6 +15,7 @@ All tests have been validated locally on macOS:
 ```
 
 ### Unit Tests (22 total)
+
 ```
 ✅ npm test
    Addon Tests (15):
@@ -21,22 +23,24 @@ All tests have been validated locally on macOS:
    - librdkafkaVersion() function (3 tests)
    - createProducer() function (4 tests)
    - producerProduce() function (5 tests)
-   
+
    Index.js Tests (7):
    - Producer class (5 tests)
    - librdkafkaVersion export (2 tests)
-   
+
    Result: 15 PASSED, 0 FAILED, 0 SKIPPED
    Result: 7 PASSED, 0 FAILED, 0 SKIPPED
 ```
 
 ### Code Quality
+
 ```
 ✅ npm run lint
    - Zig fmt formatting check: PASSED
 ```
 
 ### Smoke Tests
+
 ```
 ✅ npm run test:quick
    - Module loads correctly
@@ -49,6 +53,7 @@ All tests have been validated locally on macOS:
 ### Jobs
 
 #### 1. test-macos
+
 - **Runs on:** macOS 12, 13, 14 (Intel & Apple Silicon)
 - **Node versions:** 18.x, 20.x, 22.x
 - **Zig setup:** `brew install zig` (pre-installed on GitHub Actions)
@@ -56,6 +61,7 @@ All tests have been validated locally on macOS:
 - **Tests:** Full test suite
 
 #### 2. test-ubuntu
+
 - **Runs on:** Ubuntu (latest)
 - **Node versions:** 18.x, 20.x, 22.x
 - **Zig setup:** Direct download from ziglang.org with 3x retry logic
@@ -63,11 +69,13 @@ All tests have been validated locally on macOS:
 - **Tests:** Full test suite
 
 #### 3. lint
+
 - **Runs on:** Ubuntu
 - **Purpose:** Code style validation
 - **Check:** `zig fmt --check src/`
 
 #### 4. code-quality
+
 - **Runs on:** Ubuntu
 - **Purpose:** Additional quality gates
 - **Check:** Zig formatting
@@ -105,6 +113,7 @@ on:
 ## Expected Outcomes
 
 ### macOS Jobs
+
 ```
 Status: PASS expected ✅
 - Zig from Homebrew: ~30 seconds
@@ -115,6 +124,7 @@ Total: ~2.5 minutes per matrix combination
 ```
 
 ### Ubuntu Jobs
+
 ```
 Status: PASS expected ✅
 - Zig download + install: ~60-90 seconds (with retries)
@@ -125,6 +135,7 @@ Total: ~3-3.5 minutes per matrix combination
 ```
 
 ### Lint Job
+
 ```
 Status: PASS expected ✅
 - Zig setup: ~60-90 seconds
@@ -148,18 +159,22 @@ Total: ~90-95 seconds
 ## Potential Issues & Mitigations
 
 ### Issue: Zig download timeouts (Ubuntu)
+
 **Mitigation:** 3x retry with 10-second delays
 **Status:** ✅ Implemented
 
 ### Issue: Network flakes
+
 **Mitigation:** Retry logic in download script
 **Status:** ✅ Implemented
 
 ### Issue: Missing Zig in lint job
+
 **Mitigation:** Added explicit Zig setup to all jobs needing it
 **Status:** ✅ Fixed (commit: be4abdd)
 
 ### Issue: Build attempted before Zig available
+
 **Mitigation:** npm install uses --ignore-scripts, build is explicit step
 **Status:** ✅ Fixed (commit: 41cdfb7)
 
