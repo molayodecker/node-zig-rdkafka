@@ -26,7 +26,9 @@ pub fn build(b: *std.Build) void {
 
     // Add include/lib paths based on target OS
     if (target.result.os.tag == .windows) {
-        // Windows: Support vcpkg paths
+        // Windows: Check for headers copied by workflow to C:\include\node
+        lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\include\\node" });
+        // Support vcpkg paths
         lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\vcpkg\\installed\\x64-windows\\include" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\vcpkg\\installed\\x86-windows\\include" });
         lib.addLibraryPath(.{ .cwd_relative = "C:\\vcpkg\\installed\\x64-windows\\lib" });
