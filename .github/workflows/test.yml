@@ -79,8 +79,19 @@ jobs:
                 fi
               done
               
+              if [ ! -f /tmp/zig.tar.xz ]; then
+                echo "Failed to download Zig after 3 attempts"
+                exit 1
+              fi
+              
               tar -xf /tmp/zig.tar.xz -C /tmp/
-              sudo mv /tmp/zig-linux-${ZIG_ARCH}-${ZIG_VERSION} /opt/zig
+              # Find the extracted directory (may vary)
+              ZIG_DIR=$(ls -d /tmp/zig-* 2>/dev/null | head -1)
+              if [ -z "$ZIG_DIR" ]; then
+                echo "Failed to find extracted Zig directory"
+                exit 1
+              fi
+              sudo mv "$ZIG_DIR" /opt/zig
               sudo ln -sf /opt/zig/zig /usr/local/bin/zig
               rm /tmp/zig.tar.xz
             fi
@@ -141,8 +152,19 @@ jobs:
                 fi
               done
               
+              if [ ! -f /tmp/zig.tar.xz ]; then
+                echo "Failed to download Zig after 3 attempts"
+                exit 1
+              fi
+              
               tar -xf /tmp/zig.tar.xz -C /tmp/
-              sudo mv /tmp/zig-linux-${ZIG_ARCH}-${ZIG_VERSION} /opt/zig
+              # Find the extracted directory (may vary)
+              ZIG_DIR=$(ls -d /tmp/zig-* 2>/dev/null | head -1)
+              if [ -z "$ZIG_DIR" ]; then
+                echo "Failed to find extracted Zig directory"
+                exit 1
+              fi
+              sudo mv "$ZIG_DIR" /opt/zig
               sudo ln -sf /opt/zig/zig /usr/local/bin/zig
               rm /tmp/zig.tar.xz
             fi
@@ -192,8 +214,19 @@ jobs:
                 fi
               done
               
+              if [ ! -f /tmp/zig.tar.xz ]; then
+                echo "Failed to download Zig after 3 attempts"
+                exit 1
+              fi
+              
               tar -xf /tmp/zig.tar.xz -C /tmp/
-              sudo mv /tmp/zig-linux-${ZIG_ARCH}-${ZIG_VERSION} /opt/zig
+              # Find the extracted directory (may vary)
+              ZIG_DIR=$(ls -d /tmp/zig-* 2>/dev/null | head -1)
+              if [ -z "$ZIG_DIR" ]; then
+                echo "Failed to find extracted Zig directory"
+                exit 1
+              fi
+              sudo mv "$ZIG_DIR" /opt/zig
               sudo ln -sf /opt/zig/zig /usr/local/bin/zig
               rm /tmp/zig.tar.xz
             fi
