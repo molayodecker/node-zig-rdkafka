@@ -234,27 +234,52 @@ jobs:
       - name: Download Node headers via node-gyp
         shell: powershell
         run: |
-          Write-Host "Downloading Node headers via node-gyp..."
-          npx node-gyp install
-          
-          Write-Host "Checking for downloaded headers..."
+          Write-Host "Downloading Node headers..."
           $NodeVersion = (node --version).TrimStart('v')
           Write-Host "Node version: $NodeVersion"
           
-          # List node-gyp cache locations
-          Write-Host "Checking node-gyp cache..."
-          $NodeGypHome = "$env:APPDATA\npm-cache\node-gyp"
-          if (Test-Path $NodeGypHome) {
-            Write-Host "Found node-gyp cache at: $NodeGypHome"
-            Get-ChildItem -Path $NodeGypHome -Recurse -Include "node_api.h" | ForEach-Object {
-              Write-Host "  Found: $($_.FullName)"
+          # Create target directory
+          $TargetDir = "C:\include\node"
+          New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
+          
+          # Download headers directly from nodejs.org
+          $HeadersUrl = "https://nodejs.org/download/release/v$NodeVersion/node-v$NodeVersion-headers.tar.gz"
+          Write-Host "Downloading from: $HeadersUrl"
+          
+          $TempZip = "$env:TEMP\node-headers.tar.gz"
+          $TempDir = "$env:TEMP\node-headers-extract"
+          
+          Invoke-WebRequest -Uri $HeadersUrl -OutFile $TempZip
+          Write-Host "Downloaded headers archive"
+          
+          # Extract using PowerShell
+          New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
+          tar -xzf $TempZip -C $TempDir
+          Write-Host "Extracted headers"
+          
+          # Copy the include\node files
+          $SourceDir = Get-ChildItem -Path $TempDir -Directory | Select-Object -First 1
+          if ($SourceDir) {
+            $IncludeDir = Join-Path $SourceDir.FullName "include\node"
+            if (Test-Path $IncludeDir) {
+              Copy-Item -Path "$IncludeDir\*" -Destination $TargetDir -Recurse -Force
+              Write-Host "Copied headers to $TargetDir"
+              Get-ChildItem -Path $TargetDir | Select-Object -First 10 | ForEach-Object { Write-Host "  $_" }
+            } else {
+              Write-Host "WARNING: include\node not found at $IncludeDir"
+              Get-ChildItem -Path $SourceDir.FullName -Recurse -Filter "node_api.h" | ForEach-Object {
+                Write-Host "Found node_api.h at: $($_.DirectoryName)"
+                Copy-Item -Path "$($_.DirectoryName)\*" -Destination $TargetDir -Recurse -Force
+              }
             }
           }
           
-          # Check node_modules cache
-          Write-Host "Checking node_modules cache..."
-          Get-ChildItem -Path "node_modules\.cache\node-gyp" -Recurse -Include "node_api.h" -ErrorAction SilentlyContinue | ForEach-Object {
-            Write-Host "  Found: $($_.FullName)"
+          # Verify
+          if (Test-Path "$TargetDir\node_api.h") {
+            Write-Host "SUCCESS: node_api.h is at $TargetDir\node_api.h"
+          } else {
+            Write-Host "ERROR: node_api.h not found in $TargetDir"
+            Get-ChildItem -Path $TargetDir | ForEach-Object { Write-Host "  $_" }
           }
 
       - name: Build addon (Windows)
