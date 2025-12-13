@@ -165,11 +165,12 @@ jobs:
 
   test-windows:
     name: Test on Windows
-    if: false  # TODO: Fix Windows build hang issue with Zig/MSVC integration
     runs-on: windows-latest
+    timeout-minutes: 30
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
+      fail-fast: false
     steps:
       - uses: actions/checkout@v4
 
@@ -283,11 +284,19 @@ jobs:
             Get-ChildItem -Path $TargetDir | ForEach-Object { Write-Host "  $_" }
           }
 
+      - name: Warm up MSVC compiler (Windows)
+        shell: cmd
+        continue-on-error: true
+        run: |
+          echo "Checking cl.exe..."
+          where cl.exe
+          echo "Attempting dummy compile to warm up MSVC..."
+          cl.exe /? > nul
+          echo "MSVC ready"
+
       - name: Build addon (Windows)
         shell: cmd
-        run: |
-          echo "Running npm run build..."
-          npm run build
+        run: npm run build
 
       - name: Verify addon was built (Windows)
         shell: cmd
