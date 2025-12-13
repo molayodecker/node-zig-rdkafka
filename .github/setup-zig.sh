@@ -63,11 +63,17 @@ if [ -z "$ZIG_DIR" ]; then
   exit 1
 fi
 
+# Check if zig binary exists in the directory
+if [ ! -f "$ZIG_DIR/zig" ]; then
+  echo "Zig binary not found in $ZIG_DIR"
+  find "$ZIG_DIR" -name "zig" -type f
+  exit 1
+fi
+
 echo "Moving Zig to /opt/zig..."
 sudo mkdir -p /opt/zig
 sudo rm -rf /opt/zig/*
 sudo cp -r "$ZIG_DIR"/* /opt/zig/
-sudo ln -sf /opt/zig/zig /usr/local/bin/zig
 
 echo "Cleaning up..."
 rm -rf /tmp/zig.tar.xz /tmp/zig-extract

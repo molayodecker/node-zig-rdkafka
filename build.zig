@@ -31,15 +31,18 @@ pub fn build(b: *std.Build) void {
         // Linux: Standard system paths
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/include" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/include" });
+        lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/include/node" });
         lib.addLibraryPath(.{ .cwd_relative = "/usr/lib" });
         lib.addLibraryPath(.{ .cwd_relative = "/usr/local/lib" });
     } else {
         // macOS: Support both Apple Silicon (/opt/homebrew) and Intel (/usr/local)
-        // Add broad paths to catch any Node installation
+        // Add Node include paths from common homebrew locations
+        lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/opt/node/include" });
+        lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/opt/node/include" });
+        
+        // Add version-specific paths as fallback
         lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/Cellar" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/Cellar" });
-        lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/opt" });
-        lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/opt" });
 
         lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/include" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/include" });
