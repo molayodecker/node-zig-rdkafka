@@ -173,6 +173,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Zig (Windows)
+        shell: powershell
         run: |
           $ZigVersion = "0.15.2"
           $ZigUrl = "https://ziglang.org/download/$ZigVersion/zig-windows-x86_64-$ZigVersion.zip"
@@ -185,13 +186,11 @@ jobs:
           Write-Host "Extracting Zig"
           Expand-Archive -Path $ZigPath -DestinationPath $env:TEMP
           
-          # Find the extracted zig folder and move it
           $ExtractedPath = Get-ChildItem -Path "$env:TEMP" -Filter "zig-windows-*" -Directory | Select-Object -First 1
           if ($ExtractedPath) {
             Move-Item -Path $ExtractedPath.FullName -Destination $ZigInstall -Force
           }
           
-          # Add to PATH via GitHub Actions environment
           Add-Content -Path $env:GITHUB_PATH -Value $ZigInstall
           
           zig version
@@ -202,15 +201,14 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Setup Node headers (Windows)
+        shell: powershell
         run: |
-          # On Windows, Node headers are typically in the node installation directory
           $NodeDir = (Get-Command node).Source | Split-Path -Parent | Split-Path -Parent
           $HeadersPath = "$NodeDir\include\node"
           
           if (Test-Path "$HeadersPath\node_api.h") {
             Write-Host "Found Node headers at $HeadersPath"
             
-            # Copy headers to a standard location for build tools
             $IncludePath = "C:\include\node"
             New-Item -ItemType Directory -Path $IncludePath -Force | Out-Null
             Copy-Item -Path "$HeadersPath\*" -Destination $IncludePath -Recurse -Force
@@ -221,15 +219,15 @@ jobs:
           }
 
       - name: Install librdkafka (Windows)
+        shell: powershell
         run: |
-          # Using vcpkg to install librdkafka on Windows
           vcpkg install librdkafka:x64-windows
-          echo "VCPKG_ROOT=$(vcpkg integrate install | findstr "VCPKG_ROOT")" >> $env:GITHUB_ENV
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
       - name: Find Node headers (Windows)
+        shell: powershell
         run: |
           Write-Host "Looking for node_api.h..."
           $NodeDir = (Get-Command node).Source | Split-Path -Parent | Split-Path -Parent
@@ -247,10 +245,10 @@ jobs:
           INCLUDE: "C:\include\node;%INCLUDE%"
 
       - name: Verify addon was built (Windows)
+        shell: powershell
         run: |
           Get-ChildItem -Path zig-out -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
           
-          # If .dll file exists, copy to .node
           if (Test-Path "zig-out\lib\libaddon.dll") {
             Copy-Item -Path "zig-out\lib\libaddon.dll" -Destination "zig-out\lib\libaddon.node" -Force
             Write-Host "Copied .dll to .node"
