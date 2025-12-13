@@ -26,8 +26,19 @@ pub fn build(b: *std.Build) void {
 
     // Add include/lib paths based on target OS
     if (target.result.os.tag == .windows) {
-        // Windows: Check for headers copied by workflow to C:\include\node
+        // Windows: node-gyp cache location for headers
+        // node-gyp downloads headers to: %appdata%\npm-cache\node-gyp\<version>\include\node
+        // But we'll try multiple locations since it varies by environment
+        lib.root_module.addIncludePath(.{ .cwd_relative = "node_modules/.cache/node-gyp/include/node" });
+        
+        // Try home directory node-gyp cache
+        lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\Users\\runneradmin\\AppData\\Local\\npm-cache\\node-gyp\\include\\node" });
+        lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\Users\\runneradmin\\.npm\\_cacache" });
+        
+        // Fallback to common locations if manually set up
         lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\include\\node" });
+        lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\Program Files\\nodejs\\include\\node" });
+        
         // Support vcpkg paths
         lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\vcpkg\\installed\\x64-windows\\include" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\vcpkg\\installed\\x86-windows\\include" });

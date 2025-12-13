@@ -11,7 +11,8 @@
     "test:index": "node tests/index.test.js",
     "test:quick": "node test.js",
     "lint": "zig fmt --check src/",
-    "format": "zig fmt src/"
+    "format": "zig fmt src/",
+    "prepare": "node-gyp install || true"
   },
   "dependencies": {
     "node-addon-api": "^8.5.0"

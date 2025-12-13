@@ -217,40 +217,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Setup Node headers (Windows)
-        shell: powershell
-        run: |
-          $NodeDir = (Get-Command node).Source | Split-Path -Parent | Split-Path -Parent
-          $HeadersPath = "$NodeDir\include\node"
-          
-          Write-Host "Node directory: $NodeDir"
-          Write-Host "Looking for headers at: $HeadersPath"
-          
-          # List what's in the node directory
-          Get-ChildItem -Path "$NodeDir\include\" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $_" }
-          
-          if (Test-Path "$HeadersPath\node_api.h") {
-            Write-Host "Found Node headers at $HeadersPath"
-            
-            $IncludePath = "C:\include\node"
-            New-Item -ItemType Directory -Path $IncludePath -Force | Out-Null
-            Copy-Item -Path "$HeadersPath\*" -Destination $IncludePath -Recurse -Force
-            
-            Write-Host "Copied headers to $IncludePath"
-            Get-ChildItem -Path $IncludePath | ForEach-Object { Write-Host "  $($_.Name)" }
-          } else {
-            Write-Host "node_api.h not found at $HeadersPath, checking for fallback location..."
-            # Try node_modules  cache path
-            $CachePath = "node_modules\.cache\node-gyp\include\node\node_api.h"
-            if (Test-Path $CachePath) {
-              Write-Host "Found headers in node_modules cache"
-              $IncludePath = "C:\include\node"
-              New-Item -ItemType Directory -Path $IncludePath -Force | Out-Null
-              Copy-Item -Path "node_modules\.cache\node-gyp\include\node\*" -Destination $IncludePath -Recurse -Force
-              Write-Host "Copied cached headers to $IncludePath"
-            }
-          }
-
       - name: Install librdkafka (Windows)
         shell: powershell
         run: |
@@ -259,23 +225,34 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Find Node headers (Windows)
+      - name: Download Node headers via node-gyp
         shell: powershell
         run: |
-          Write-Host "Looking for node_api.h..."
-          $NodeDir = (Get-Command node).Source | Split-Path -Parent | Split-Path -Parent
-          Write-Host "Node directory: $NodeDir"
-          node --version
+          Write-Host "Downloading Node headers via node-gyp..."
+          npx node-gyp install
           
-          Get-ChildItem -Path $NodeDir -Recurse -Filter "node_api.h" 2>$null | ForEach-Object { Write-Host $_.FullName }
-          if (-not (Test-Path "C:\include\node\node_api.h")) {
-            Write-Host "Headers not found at C:\include\node"
+          Write-Host "Checking for downloaded headers..."
+          $NodeVersion = (node --version).TrimStart('v')
+          Write-Host "Node version: $NodeVersion"
+          
+          # List node-gyp cache locations
+          Write-Host "Checking node-gyp cache..."
+          $NodeGypHome = "$env:APPDATA\npm-cache\node-gyp"
+          if (Test-Path $NodeGypHome) {
+            Write-Host "Found node-gyp cache at: $NodeGypHome"
+            Get-ChildItem -Path $NodeGypHome -Recurse -Include "node_api.h" | ForEach-Object {
+              Write-Host "  Found: $($_.FullName)"
+            }
+          }
+          
+          # Check node_modules cache
+          Write-Host "Checking node_modules cache..."
+          Get-ChildItem -Path "node_modules\.cache\node-gyp" -Recurse -Include "node_api.h" -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "  Found: $($_.FullName)"
           }
 
       - name: Build addon
         run: npm run build
-        env:
-          INCLUDE: "C:\\include\\node;%INCLUDE%"
 
       - name: Verify addon was built (Windows)
         shell: powershell
