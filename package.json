@@ -7,7 +7,11 @@
     "postinstall": "cd zig-out/lib && [ -f libaddon.dylib ] && cp libaddon.dylib libaddon.node || true",
     "build": "zig build",
     "install": "npm run build",
-    "test": "node test.js",
+    "test": "npm run test:all",
+    "test:all": "node tests/addon.test.js && node tests/index.test.js",
+    "test:addon": "node tests/addon.test.js",
+    "test:index": "node tests/index.test.js",
+    "test:quick": "node test.js",
     "lint": "zig fmt --check src/",
     "format": "zig fmt src/"
   },

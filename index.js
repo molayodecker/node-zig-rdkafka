@@ -1,4 +1,4 @@
-const native = require('./zig-out/lib/addon.node');
+const native = require('./zig-out/lib/libaddon.node');
 
 class Producer {
   constructor(config) {
@@ -6,7 +6,18 @@ class Producer {
   }
 
   produce(topic, payload) {
-    return native.producerProduce(this._handle, topic, Buffer.from(payload));
+    // Convert payload to Buffer if needed
+    let buf;
+    if (Buffer.isBuffer(payload)) {
+      buf = payload;
+    } else if (typeof payload === 'string') {
+      buf = Buffer.from(payload);
+    } else if (typeof payload === 'object') {
+      buf = Buffer.from(JSON.stringify(payload));
+    } else {
+      buf = Buffer.from(String(payload));
+    }
+    return native.producerProduce(this._handle, topic, buf);
   }
 }
 

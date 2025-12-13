@@ -3,8 +3,7 @@ name: Feature Request
 about: Suggest a new feature or enhancement
 title: "[FEATURE] "
 labels: enhancement
-assignees: ''
-
+assignees: ""
 ---
 
 ## Is your feature request related to a problem?
@@ -29,6 +28,6 @@ How would this feature be used?
 
 ```javascript
 // Example code showing the desired API
-const addon = require('./zig-out/lib/libaddon.node');
+const addon = require("./zig-out/lib/libaddon.node");
 // ...
 ```

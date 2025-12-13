@@ -3,8 +3,7 @@ name: Bug Report
 about: Report a bug or issue
 title: "[BUG] "
 labels: bug
-assignees: ''
-
+assignees: ""
 ---
 
 ## Description
@@ -20,9 +19,9 @@ A clear and concise description of what the bug is.
 
 ## Steps to Reproduce
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## Expected Behavior
 
@@ -46,6 +45,6 @@ Any other relevant information?
 
 ```javascript
 // Minimal code that reproduces the issue
-const addon = require('./zig-out/lib/libaddon.node');
+const addon = require("./zig-out/lib/libaddon.node");
 // ...
 ```

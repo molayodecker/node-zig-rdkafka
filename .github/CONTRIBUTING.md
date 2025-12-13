@@ -156,15 +156,16 @@ Add test cases in `test.js` or create new test files:
 
 ```javascript
 // test-consumer.js
-const addon = require('./zig-out/lib/libaddon.node');
+const addon = require("./zig-out/lib/libaddon.node");
 
-console.log('Testing consumer...');
+console.log("Testing consumer...");
 // Add your test code here
 ```
 
 ### CI/CD
 
 Tests automatically run on:
+
 - Push to `main` or `develop`
 - Pull requests against `main` or `develop`
 - Runs on macOS (Intel & ARM), Ubuntu, and more
@@ -183,6 +184,7 @@ Check `.github/workflows/test.yml` for details.
 Before opening an issue, check if it's already reported.
 
 Include:
+
 - OS and architecture
 - Zig version (`zig version`)
 - Node.js version (`node --version`)
