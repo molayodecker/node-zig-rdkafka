@@ -47,6 +47,14 @@ jobs:
 
       - name: Build addon
         run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Verify module loads
+        run: node test.js
+
+  test-ubuntu:
     name: Test on Ubuntu
     runs-on: ubuntu-latest
     strategy:
