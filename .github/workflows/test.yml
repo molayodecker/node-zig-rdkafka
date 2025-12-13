@@ -78,6 +78,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y librdkafka-dev
 
+      - name: Install Node.js headers (Ubuntu)
+        run: |
+          sudo apt-get install -y nodejs-dev || true
+          # Also find where headers actually are
+          find /usr -name "node_api.h" 2>/dev/null | head -3 || echo "Not found via system package"
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
 

@@ -28,12 +28,15 @@ pub fn build(b: *std.Build) void {
         lib.addLibraryPath(.{ .cwd_relative = "C:\\vcpkg\\installed\\x64-windows\\lib" });
         lib.addLibraryPath(.{ .cwd_relative = "C:\\vcpkg\\installed\\x86-windows\\lib" });
     } else if (target.result.os.tag == .linux) {
-        // Linux: Standard system paths
+        // Linux: Try multiple common locations for Node headers
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/include" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/include" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/include/node" });
+        lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/include/x86_64-linux-gnu" });
+        lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/include/x86_64-linux-gnu/node" });
         lib.addLibraryPath(.{ .cwd_relative = "/usr/lib" });
         lib.addLibraryPath(.{ .cwd_relative = "/usr/local/lib" });
+        lib.addLibraryPath(.{ .cwd_relative = "/usr/lib/x86_64-linux-gnu" });
     } else {
         // macOS: Try to find Node using common homebrew paths
         // First check for symlinked opt paths
