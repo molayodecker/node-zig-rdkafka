@@ -6,6 +6,8 @@ const c = @cImport({
     @cInclude("node_api.h");
     @cInclude("librdkafka/rdkafka.h");
 });
+const Producer = @import("kafka/producer.zig").Producer;
+const Consumer = @import("kafka/consumer.zig").Consumer;
 
 pub const napi_env = c.napi_env;
 pub const napi_value = c.napi_value;
@@ -55,16 +57,129 @@ fn createFunction(
 
 // This is called from shim.c via NAPI_MODULE
 export fn Init(env: napi_env, exports: napi_value) callconv(.c) napi_value {
-    var fn_val: napi_value = null;
-    const name = "librdkafkaVersion";
+    {
+        var fn_val: napi_value = null;
+        const name = "librdkafkaVersion";
 
-    // Create JS function
-    if (createFunction(env, name, js_librdkafkaVersion, &fn_val)) {
-        // Attach to exports
-        _ = c.napi_set_named_property(env, exports, name, fn_val);
-    } else |_| {
-        // ignore errors, just return exports as-is
+        // Create JS function
+        if (createFunction(env, name, js_librdkafkaVersion, &fn_val)) {
+            // Attach to exports
+            _ = c.napi_set_named_property(env, exports, name, fn_val);
+        } else |_| {
+            // ignore errors, just return exports as-is
+        }
     }
 
+    {
+        var fn_val: napi_value = null;
+        const name = "createProducer";
+        if (createFunction(env, name, js_createProducer, &fn_val)) {
+            _ = c.napi_set_named_property(env, exports, name, fn_val);
+        } else |_| {
+            // ignore errors
+        }
+    }
+
+    {
+        var fn_val: napi_value = null;
+        const name = "producerProduce";
+        if (createFunction(env, name, js_producerProduce, &fn_val)) {
+            _ = c.napi_set_named_property(env, exports, name, fn_val);
+        } else |_| {
+            // ignore errors
+        }
+    }
     return exports;
+}
+
+fn js_createProducer(env: napi_env, info: napi_callback_info) callconv(.c) napi_value {
+    var argc: usize = 1;
+    var args: [1]napi_value = undefined;
+    var this_arg: napi_value = null;
+
+    _ = c.napi_get_cb_info(env, info, &argc, &args, &this_arg, null);
+
+    if (argc < 1) {
+        var ret: napi_value = null;
+        _ = c.napi_get_undefined(env, &ret);
+        return ret;
+    }
+
+    // Expect a single string: bootstrap servers
+    var str_len: usize = 0;
+    _ = c.napi_get_value_string_utf8(env, args[0], null, 0, &str_len);
+
+    var buf = std.heap.c_allocator.alloc(u8, str_len + 1) catch {
+        var ret: napi_value = null;
+        _ = c.napi_get_undefined(env, &ret);
+        return ret;
+    };
+    defer std.heap.c_allocator.free(buf);
+
+    _ = c.napi_get_value_string_utf8(env, args[0], buf.ptr, buf.len, &str_len);
+    buf[str_len] = 0; // null-terminate for librdkafka
+
+    const prod = Producer.init(buf[0..str_len]) catch {
+        var ret: napi_value = null;
+        _ = c.napi_get_undefined(env, &ret);
+        return ret;
+    };
+
+    // Allocate on C heap so lifetime outlives this call
+    const prod_ptr = std.heap.c_allocator.create(Producer) catch {
+        var ret: napi_value = null;
+        _ = c.napi_get_undefined(env, &ret);
+        return ret;
+    };
+    prod_ptr.* = prod;
+
+    var external: napi_value = null;
+    _ = c.napi_create_external(
+        env,
+        prod_ptr,
+        null, // optional finalizer – add later to call deinit()
+        null,
+        &external,
+    );
+    return external;
+}
+
+fn js_producerProduce(env: napi_env, info: napi_callback_info) callconv(.c) napi_value {
+    var argc: usize = 3;
+    var args: [3]napi_value = undefined;
+    var this_arg: napi_value = null;
+
+    _ = c.napi_get_cb_info(env, info, &argc, &args, &this_arg, null);
+
+    var ret: napi_value = null;
+    _ = c.napi_get_undefined(env, &ret);
+
+    if (argc < 3) return ret;
+
+    // args[0] = external Producer
+    var data: ?*anyopaque = null;
+    _ = c.napi_get_value_external(env, args[0], &data);
+    if (data == null) return ret;
+    const prod = @as(*Producer, @ptrCast(@alignCast(data.?)));
+
+    // args[1] = topic string
+    var topic_len: usize = 0;
+    _ = c.napi_get_value_string_utf8(env, args[1], null, 0, &topic_len);
+    var topic_buf = std.heap.c_allocator.alloc(u8, topic_len + 1) catch {
+        return ret;
+    };
+    defer std.heap.c_allocator.free(topic_buf);
+    _ = c.napi_get_value_string_utf8(env, args[1], topic_buf.ptr, topic_buf.len, &topic_len);
+    topic_buf[topic_len] = 0;
+
+    // args[2] = payload Buffer
+    var payload_ptr: [*]u8 = undefined;
+    var payload_len: usize = 0;
+    _ = c.napi_get_buffer_info(env, args[2], @ptrCast(&payload_ptr), &payload_len);
+
+    _ = Producer.produce(prod, topic_buf[0..topic_len], payload_ptr[0..payload_len]) catch {
+        return ret;
+    };
+
+    return ret;
 }

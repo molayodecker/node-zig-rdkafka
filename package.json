@@ -1,4 +1,13 @@
 {
+  "name": "node-zig-rdkafka",
+  "version": "1.0.0",
+  "description": "Zig + librdkafka Node.js addon",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "cd zig-out/lib && [ -f libaddon.dylib ] && cp libaddon.dylib libaddon.node || true",
+    "build": "zig build",
+    "install": "npm run build"
+  },
   "dependencies": {
     "node-addon-api": "^8.5.0"
   }
