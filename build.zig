@@ -35,10 +35,11 @@ pub fn build(b: *std.Build) void {
         lib.addLibraryPath(.{ .cwd_relative = "/usr/local/lib" });
     } else {
         // macOS: Support both Apple Silicon (/opt/homebrew) and Intel (/usr/local)
-        lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/Cellar/node/25.2.1/include/node" });
-        lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/Cellar/node/25.2.1/include/node" });
-        lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/opt/node/include/node" });
-        lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/opt/node/include/node" });
+        // Add broad paths to catch any Node installation
+        lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/Cellar" });
+        lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/Cellar" });
+        lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/opt" });
+        lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/opt" });
 
         lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/include" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/include" });

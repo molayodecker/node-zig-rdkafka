@@ -72,5 +72,8 @@ sudo ln -sf /opt/zig/zig /usr/local/bin/zig
 echo "Cleaning up..."
 rm -rf /tmp/zig.tar.xz /tmp/zig-extract
 
+echo "Adding Zig to PATH..."
+export PATH="/opt/zig:$PATH"
+
 echo "Verifying Zig installation..."
-zig version
+/opt/zig/zig version
