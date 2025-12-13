@@ -1,0 +1,110 @@
+name: Test & Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test-macos:
+    name: Test on macOS
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-12, macos-13, macos-14]
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Zig
+        uses: mlugg/setup-zig@v1
+        with:
+          version: 0.15.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install librdkafka (macOS)
+        run: brew install librdkafka
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build addon
+        run: zig build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Verify module loads
+        run: node test.js
+
+  test-ubuntu:
+    name: Test on Ubuntu
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Zig
+        uses: mlugg/setup-zig@v1
+        with:
+          version: 0.15.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install librdkafka (Ubuntu)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librdkafka-dev
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build addon
+        run: zig build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Verify module loads
+        run: node test.js
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run eslint
+        run: npm run lint --if-present
+
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Zig
+        uses: mlugg/setup-zig@v1
+        with:
+          version: 0.15.2
+
+      - name: Check Zig formatting
+        run: zig fmt --check src/
