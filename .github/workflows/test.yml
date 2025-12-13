@@ -283,10 +283,18 @@ jobs:
           }
 
       - name: Build addon (Windows)
-        shell: cmd
+        shell: powershell
         run: |
-          echo "Building with zig..."
-          npm run build
+          Write-Host "Building with zig..."
+          Write-Host "Current directory: $(Get-Location)"
+          Write-Host "ZIG: $(where.exe zig.exe)"
+          Write-Host "Running zig build..."
+          zig build --verbose-cc 2>&1
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Build failed with exit code: $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+          Write-Host "Build succeeded"
 
       - name: Verify addon was built (Windows)
         shell: cmd
