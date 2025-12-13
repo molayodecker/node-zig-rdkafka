@@ -4,9 +4,8 @@
   "description": "Zig + librdkafka Node.js addon",
   "main": "index.js",
   "scripts": {
-    "postinstall": "cd zig-out/lib && [ -f libaddon.dylib ] && cp libaddon.dylib libaddon.node || true",
+    "postinstall": "npm run build",
     "build": "zig build",
-    "install": "npm run build",
     "test": "npm run test:all",
     "test:all": "node tests/addon.test.js && node tests/index.test.js",
     "test:addon": "node tests/addon.test.js",
