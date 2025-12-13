@@ -70,6 +70,16 @@ jobs:
       - name: Build addon
         run: npm run build
 
+      - name: Verify addon was built (macOS)
+        run: |
+          ls -laR zig-out/ || echo "zig-out not found"
+          # If .dylib file exists, create .node symlink
+          if [ -f zig-out/lib/libaddon.dylib ]; then
+            ln -sf libaddon.dylib zig-out/lib/libaddon.node || true
+            echo "Created symlink from .dylib to .node"
+          fi
+          ls -la zig-out/lib/ 2>/dev/null || echo "zig-out/lib not found"
+
       - name: Run tests
         run: npm test
 
@@ -139,12 +149,17 @@ jobs:
 
       - name: Verify addon was built (Ubuntu)
         run: |
-          ls -la zig-out/lib/ || echo "zig-out/lib not found"
+          ls -laR zig-out/ || echo "zig-out not found"
           # If .so file exists, create .node symlink
           if [ -f zig-out/lib/libaddon.so ]; then
             ln -sf libaddon.so zig-out/lib/libaddon.node || true
+            echo "Created symlink from .so to .node"
           fi
-          ls -la zig-out/lib/libaddon.* || echo "No addon files found"
+          # Also try .a (static lib)
+          if [ -f "zig-out/lib/libaddon.a" ]; then
+            echo "Found static lib .a"
+          fi
+          ls -la zig-out/lib/ 2>/dev/null || echo "zig-out/lib not found"
 
       - name: Run tests
         run: npm test
