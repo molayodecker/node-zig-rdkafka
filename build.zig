@@ -20,6 +20,9 @@ pub fn build(b: *std.Build) void {
     // Node / N-API headers (via node-addon-api)
     lib.root_module.addIncludePath(b.path("node_modules/node-addon-api"));
 
+    // Also try to find headers from node-gyp or system node installation
+    lib.root_module.addIncludePath(.{ .cwd_relative = "node_modules/.cache/node-gyp/include/node" });
+
     // Add include/lib paths based on target OS
     if (target.result.os.tag == .windows) {
         // Windows: Support vcpkg paths
