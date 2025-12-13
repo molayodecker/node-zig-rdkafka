@@ -222,6 +222,12 @@ jobs:
         run: |
           vcpkg install librdkafka:x64-windows
 
+      - name: Set up MSVC toolchain (Windows)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+          spectre: true
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
@@ -251,8 +257,11 @@ jobs:
             Write-Host "  Found: $($_.FullName)"
           }
 
-      - name: Build addon
-        run: npm run build
+      - name: Build addon (Windows)
+        shell: cmd
+        run: |
+          echo "Building with zig..."
+          npm run build
 
       - name: Verify addon was built (Windows)
         shell: powershell
