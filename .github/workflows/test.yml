@@ -204,9 +204,13 @@ jobs:
             }
           }
           
+          # Add to both current PowerShell session PATH and GitHub Actions PATH
+          $env:PATH = "$ZigInstall;$env:PATH"
           Add-Content -Path $env:GITHUB_PATH -Value $ZigInstall
           
-          zig version
+          # Test immediately
+          Write-Host "Testing zig..."
+          & "$ZigInstall\zig.exe" version
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
