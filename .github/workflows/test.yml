@@ -178,17 +178,31 @@ jobs:
           $ZigVersion = "0.15.2"
           $ZigUrl = "https://ziglang.org/download/$ZigVersion/zig-x86_64-windows-$ZigVersion.zip"
           $ZigPath = "$env:TEMP\zig-windows.zip"
+          $ZigTemp = "$env:TEMP\zig-extract"
           $ZigInstall = "C:\zig"
           
           Write-Host "Downloading Zig from $ZigUrl"
           Invoke-WebRequest -Uri $ZigUrl -OutFile $ZigPath
           
           Write-Host "Extracting Zig"
-          Expand-Archive -Path $ZigPath -DestinationPath $env:TEMP
+          New-Item -ItemType Directory -Path $ZigTemp -Force | Out-Null
+          Expand-Archive -Path $ZigPath -DestinationPath $ZigTemp -Force
           
-          $ExtractedPath = Get-ChildItem -Path "$env:TEMP" -Filter "zig-x86_64-windows-*" -Directory | Select-Object -First 1
-          if ($ExtractedPath) {
-            Move-Item -Path $ExtractedPath.FullName -Destination $ZigInstall -Force
+          # Find the zig executable directory (could be at root or in a subdirectory)
+          $ZigExe = Get-ChildItem -Path $ZigTemp -Recurse -Filter "zig.exe" | Select-Object -First 1
+          if ($ZigExe) {
+            $ZigDir = $ZigExe.Directory.FullName
+            Write-Host "Found zig at $ZigDir"
+            Copy-Item -Path $ZigDir -Destination $ZigInstall -Recurse -Force
+          } else {
+            # If no zig.exe found, the root might be the zig directory
+            $FirstDir = Get-ChildItem -Path $ZigTemp -Directory | Select-Object -First 1
+            if ($FirstDir) {
+              Copy-Item -Path $FirstDir.FullName -Destination $ZigInstall -Recurse -Force
+            } else {
+              Copy-Item -Path $ZigTemp\* -Destination $ZigInstall -Recurse -Force
+            }
+            Write-Host "Copied extracted content to $ZigInstall"
           }
           
           Add-Content -Path $env:GITHUB_PATH -Value $ZigInstall
