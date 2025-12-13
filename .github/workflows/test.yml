@@ -223,6 +223,12 @@ jobs:
           $NodeDir = (Get-Command node).Source | Split-Path -Parent | Split-Path -Parent
           $HeadersPath = "$NodeDir\include\node"
           
+          Write-Host "Node directory: $NodeDir"
+          Write-Host "Looking for headers at: $HeadersPath"
+          
+          # List what's in the node directory
+          Get-ChildItem -Path "$NodeDir\include\" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $_" }
+          
           if (Test-Path "$HeadersPath\node_api.h") {
             Write-Host "Found Node headers at $HeadersPath"
             
@@ -231,8 +237,18 @@ jobs:
             Copy-Item -Path "$HeadersPath\*" -Destination $IncludePath -Recurse -Force
             
             Write-Host "Copied headers to $IncludePath"
+            Get-ChildItem -Path $IncludePath | ForEach-Object { Write-Host "  $($_.Name)" }
           } else {
-            Write-Host "Node headers not found at $HeadersPath"
+            Write-Host "node_api.h not found at $HeadersPath, checking for fallback location..."
+            # Try node_modules  cache path
+            $CachePath = "node_modules\.cache\node-gyp\include\node\node_api.h"
+            if (Test-Path $CachePath) {
+              Write-Host "Found headers in node_modules cache"
+              $IncludePath = "C:\include\node"
+              New-Item -ItemType Directory -Path $IncludePath -Force | Out-Null
+              Copy-Item -Path "node_modules\.cache\node-gyp\include\node\*" -Destination $IncludePath -Recurse -Force
+              Write-Host "Copied cached headers to $IncludePath"
+            }
           }
 
       - name: Install librdkafka (Windows)
