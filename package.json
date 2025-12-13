@@ -4,7 +4,6 @@
   "description": "Zig + librdkafka Node.js addon",
   "main": "index.js",
   "scripts": {
-    "postinstall": "npm run build",
     "build": "zig build",
     "test": "npm run test:all",
     "test:all": "node tests/addon.test.js && node tests/index.test.js",
@@ -18,6 +17,6 @@
     "node-addon-api": "^8.5.0"
   },
   "devDependencies": {
-    "node-gyp": "^10.0.0"
+    "node-gyp": "10.3.1"
   }
 }
