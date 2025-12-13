@@ -58,6 +58,10 @@ mkdir -p /tmp/zig-extract
 tar -xf /tmp/zig.tar.xz -C /tmp/zig-extract/
 ZIG_DIR=$(find /tmp/zig-extract -maxdepth 1 -type d -name "zig-*" | head -1)
 
+echo "Extracted Zig directory: $ZIG_DIR"
+echo "Contents of $ZIG_DIR:"
+ls -la "$ZIG_DIR" || echo "Failed to list directory"
+
 if [ -z "$ZIG_DIR" ]; then
   echo "Failed to find extracted Zig directory"
   exit 1
@@ -65,15 +69,29 @@ fi
 
 # Check if zig binary exists in the directory
 if [ ! -f "$ZIG_DIR/zig" ]; then
-  echo "Zig binary not found in $ZIG_DIR"
-  find "$ZIG_DIR" -name "zig" -type f
-  exit 1
+  echo "Zig binary not found at $ZIG_DIR/zig, searching for it..."
+  find /tmp/zig-extract -name "zig" -type f
+  # Try to use the binary from wherever it was found
+  ZIG_BIN=$(find /tmp/zig-extract -name "zig" -type f | head -1)
+  if [ -z "$ZIG_BIN" ]; then
+    echo "Could not find zig binary anywhere"
+    exit 1
+  fi
+  # Update ZIG_DIR to the parent of the binary
+  ZIG_DIR=$(dirname "$ZIG_BIN")
 fi
 
-echo "Moving Zig to /opt/zig..."
-sudo mkdir -p /opt/zig
-sudo rm -rf /opt/zig/*
-sudo cp -r "$ZIG_DIR"/* /opt/zig/
+echo "Copying Zig to /opt/zig..."
+# Copy the binary directly from wherever we found it
+if [ -d "$ZIG_DIR" ]; then
+  echo "Copying from directory: $ZIG_DIR"
+  sudo mkdir -p /opt/zig
+  sudo rm -rf /opt/zig/*
+  sudo cp -r "$ZIG_DIR"/* /opt/zig/
+else
+  echo "Error: ZIG_DIR is not a directory: $ZIG_DIR"
+  exit 1
+fi
 
 echo "Cleaning up..."
 rm -rf /tmp/zig.tar.xz /tmp/zig-extract
