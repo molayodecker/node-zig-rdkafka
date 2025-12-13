@@ -36,8 +36,14 @@ jobs:
           NODE_DIR=$(dirname $(dirname "$NODE_BIN"))
           if [ -f "$NODE_DIR/include/node/node_api.h" ]; then
             echo "Found Node headers at $NODE_DIR/include/node/"
-            mkdir -p /usr/local/include/node
-            cp -r "$NODE_DIR/include/node/"* /usr/local/include/node/ || true
+            mkdir -p /usr/local/include/node 2>/dev/null || {
+              # If /usr/local/include doesn't exist, use a different approach
+              # Export as include path via environment variable
+              echo "Cannot write to /usr/local/include, using sudo..."
+              echo "$(dirname $(dirname "$NODE_BIN"))/include/node"
+            }
+            sudo mkdir -p /usr/local/include/node 2>/dev/null
+            sudo cp -r "$NODE_DIR/include/node/"* /usr/local/include/node/ 2>/dev/null || true
           else
             echo "Node headers not found at expected location, checking alternatives..."
             find "$NODE_DIR" -name "node_api.h" 2>/dev/null | head -1 || echo "Not found"
@@ -130,6 +136,15 @@ jobs:
 
       - name: Build addon
         run: npm run build
+
+      - name: Verify addon was built (Ubuntu)
+        run: |
+          ls -la zig-out/lib/ || echo "zig-out/lib not found"
+          # If .so file exists, create .node symlink
+          if [ -f zig-out/lib/libaddon.so ]; then
+            ln -sf libaddon.so zig-out/lib/libaddon.node || true
+          fi
+          ls -la zig-out/lib/libaddon.* || echo "No addon files found"
 
       - name: Run tests
         run: npm test
