@@ -20,8 +20,9 @@ pub fn build(b: *std.Build) void {
     // Node / N-API headers (via node-addon-api)
     lib.root_module.addIncludePath(b.path("node_modules/node-addon-api"));
 
-    // Also try to find headers from node-gyp or system node installation
-    lib.root_module.addIncludePath(.{ .cwd_relative = "node_modules/.cache/node-gyp/include/node" });
+    // Try to find headers from node-gyp cache (make path absolute)
+    const node_gyp_path = b.path("node_modules/.cache/node-gyp/include/node");
+    lib.root_module.addIncludePath(node_gyp_path);
 
     // Add include/lib paths based on target OS
     if (target.result.os.tag == .windows) {
@@ -32,6 +33,8 @@ pub fn build(b: *std.Build) void {
         lib.addLibraryPath(.{ .cwd_relative = "C:\\vcpkg\\installed\\x86-windows\\lib" });
     } else if (target.result.os.tag == .linux) {
         // Linux: Try multiple common locations for Node headers
+        // /usr/local/include/node is set up by workflow if available
+        lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/include/node" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/include" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/include" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/include/node" });
@@ -42,6 +45,9 @@ pub fn build(b: *std.Build) void {
         lib.addLibraryPath(.{ .cwd_relative = "/usr/lib/x86_64-linux-gnu" });
     } else {
         // macOS: Try to find Node using common homebrew paths
+        // /usr/local/include/node is set up by workflow if available
+        lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/include/node" });
+        
         // First check for symlinked opt paths
         lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/opt/node/include/node" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/opt/node/include/node" });

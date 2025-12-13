@@ -29,24 +29,21 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install Node headers (macOS)
+      - name: Setup Node headers (macOS)
         run: |
-          # The setup-node action installs Node but we need headers separately
-          # Try to get Node from the environment and create a symlink
-          NODE_BINARY=$(which node)
-          NODE_VERSION=$(node -v | cut -dv -f2 | cut -d. -f1-2)
-          echo "Node version: $NODE_VERSION"
-          
-          # Create a temporary include directory with symlinks to node-addon-api headers
-          mkdir -p /tmp/node_headers
-          cp node_modules/node-addon-api/* /tmp/node_headers/ 2>/dev/null || true
-          
-          # Try to find system-wide node headers via npm config
-          NODE_INCLUDE_PATH=$(npm config get nodedir)/include 2>/dev/null || echo ""
-          if [ -d "$NODE_INCLUDE_PATH" ]; then
-            echo "Found Node headers at: $NODE_INCLUDE_PATH"
-            cp -r "$NODE_INCLUDE_PATH/"* /tmp/node_headers/ 2>/dev/null || true
+          # Find the actual Node installation and copy headers
+          NODE_BIN=$(which node)
+          NODE_DIR=$(dirname $(dirname "$NODE_BIN"))
+          if [ -f "$NODE_DIR/include/node/node_api.h" ]; then
+            echo "Found Node headers at $NODE_DIR/include/node/"
+            mkdir -p /usr/local/include/node
+            cp -r "$NODE_DIR/include/node/"* /usr/local/include/node/ || true
+          else
+            echo "Node headers not found at expected location, checking alternatives..."
+            find "$NODE_DIR" -name "node_api.h" 2>/dev/null | head -1 || echo "Not found"
           fi
+          # Verify they're there
+          ls /usr/local/include/node/node_api.h 2>/dev/null && echo "Headers setup successfully" || echo "Headers still not found"
 
       - name: Install librdkafka (macOS)
         run: brew install librdkafka
@@ -91,6 +88,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: Setup Node headers (Ubuntu)
+        run: |
+          # Find the actual Node installation and copy headers
+          NODE_BIN=$(which node)
+          NODE_DIR=$(dirname $(dirname "$NODE_BIN"))
+          if [ -f "$NODE_DIR/include/node/node_api.h" ]; then
+            echo "Found Node headers at $NODE_DIR/include/node/"
+            mkdir -p /usr/local/include/node
+            cp -r "$NODE_DIR/include/node/"* /usr/local/include/node/ || true
+          fi
+          # Verify they're there
+          ls /usr/local/include/node/node_api.h 2>/dev/null && echo "Headers setup successfully" || echo "Headers still not found"
 
       - name: Install librdkafka (Ubuntu)
         run: |
