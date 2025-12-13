@@ -291,14 +291,22 @@ jobs:
       - name: Verify addon was built (Windows)
         shell: powershell
         run: |
-          Get-ChildItem -Path zig-out -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+          Write-Host "Looking for built addon..."
+          Get-ChildItem -Path "zig-out" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
           
-          if (Test-Path "zig-out\lib\libaddon.dll") {
-            Copy-Item -Path "zig-out\lib\libaddon.dll" -Destination "zig-out\lib\libaddon.node" -Force
-            Write-Host "Copied .dll to .node"
+          # Find any .dll file and copy it to .node
+          $DllFile = Get-ChildItem -Path "zig-out" -Recurse -Filter "*.dll" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($DllFile) {
+            Write-Host "Found DLL at: $($DllFile.FullName)"
+            $TargetNode = Join-Path $DllFile.Directory "libaddon.node"
+            Copy-Item -Path $DllFile.FullName -Destination $TargetNode -Force
+            Write-Host "Copied to: $TargetNode"
+          } else {
+            Write-Host "WARNING: No .dll file found"
           }
           
-          Get-ChildItem -Path "zig-out\lib" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+          Write-Host "Final contents of zig-out/lib:"
+          Get-ChildItem -Path "zig-out\lib" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.FullName)" }
 
       - name: Run tests
         run: npm test
