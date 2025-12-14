@@ -5,7 +5,8 @@ console.log('');
 
 // Consumer example  
 const brokers = 'localhost:9092';
-const groupId = 'node-zig-consumer-example';
+// Use a unique group ID each time to read from the beginning of the topic
+const groupId = `node-zig-consumer-${Date.now()}`;
 const topic = 'test';
 
 console.log(`Creating consumer...`);

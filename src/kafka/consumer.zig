@@ -46,17 +46,39 @@ pub const Consumer = struct {
             return error.AutoCommitConfigFailed;
         }
 
+        // Start from the beginning if no offset has been committed
+        if (c.rd_kafka_conf_set(conf, "auto.offset.reset", "earliest", &errstr, errstr.len) != c.RD_KAFKA_CONF_OK) {
+            c.rd_kafka_conf_destroy(conf);
+            return error.AutoOffsetResetFailed;
+        }
+
         // Create consumer handle
         const rk = c.rd_kafka_new(c.RD_KAFKA_CONSUMER, conf, &errstr, errstr.len) orelse {
             c.rd_kafka_conf_destroy(conf);
             return error.ConsumerCreationFailed;
         };
 
-        // Create topic handle
+        // Create topic handle (for compatibility, but using new API)
         const rkt = c.rd_kafka_topic_new(rk, @ptrCast(topic_z.ptr), null) orelse {
             c.rd_kafka_destroy(rk);
             return error.TopicCreationFailed;
         };
+
+        // Subscribe to topic using high-level consumer API
+        const partitions = c.rd_kafka_topic_partition_list_new(1) orelse {
+            c.rd_kafka_topic_destroy(rkt);
+            c.rd_kafka_destroy(rk);
+            return error.PartitionListFailed;
+        };
+        defer c.rd_kafka_topic_partition_list_destroy(partitions);
+
+        _ = c.rd_kafka_topic_partition_list_add(partitions, @ptrCast(topic_z.ptr), c.RD_KAFKA_PARTITION_UA);
+
+        if (c.rd_kafka_subscribe(rk, partitions) != c.RD_KAFKA_RESP_ERR_NO_ERROR) {
+            c.rd_kafka_topic_destroy(rkt);
+            c.rd_kafka_destroy(rk);
+            return error.SubscribeFailed;
+        }
 
         return Consumer{
             .rk = rk,
