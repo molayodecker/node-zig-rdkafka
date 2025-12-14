@@ -7,23 +7,23 @@ pub const Consumer = struct {
     rk: *c.rd_kafka_t,
     rkt: *c.rd_kafka_topic_t,
     last_msg_len: usize = 0,
-    last_msg_buf: [32*1024]u8 = [_]u8{0} ** (32*1024),
+    last_msg_buf: [32 * 1024]u8 = [_]u8{0} ** (32 * 1024),
 
     pub fn init(brokers: []const u8, group_id: []const u8, topic: []const u8) !Consumer {
         var errstr: [512]u8 = undefined;
         const conf: *c.rd_kafka_conf_t = c.rd_kafka_conf_new() orelse return error.ConfCreationFailed;
-        
+
         const std_allocator = std.heap.c_allocator;
-        
+
         // Allocate null-terminated strings
         const brokers_z = try std_allocator.allocSentinel(u8, brokers.len, 0);
         defer std_allocator.free(brokers_z);
         @memcpy(brokers_z[0..brokers.len], brokers);
-        
+
         const group_id_z = try std_allocator.allocSentinel(u8, group_id.len, 0);
         defer std_allocator.free(group_id_z);
         @memcpy(group_id_z[0..group_id.len], group_id);
-        
+
         const topic_z = try std_allocator.allocSentinel(u8, topic.len, 0);
         defer std_allocator.free(topic_z);
         @memcpy(topic_z[0..topic.len], topic);

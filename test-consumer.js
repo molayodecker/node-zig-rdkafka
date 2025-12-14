@@ -32,8 +32,6 @@ const interval = setInterval(() => {
     const timestamp = new Date().toISOString();
     messageCount++;
     console.log(`[${timestamp}] Message ${messageCount}:`, text);
-  } else {
-    // console.log('(no messages in this poll)');
   }
 }, 2100);
 

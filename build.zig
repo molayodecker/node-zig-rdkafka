@@ -30,15 +30,15 @@ pub fn build(b: *std.Build) void {
         // node-gyp downloads headers to: %appdata%\npm-cache\node-gyp\<version>\include\node
         // But we'll try multiple locations since it varies by environment
         lib.root_module.addIncludePath(.{ .cwd_relative = "node_modules/.cache/node-gyp/include/node" });
-        
+
         // Try home directory node-gyp cache
         lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\Users\\runneradmin\\AppData\\Local\\npm-cache\\node-gyp\\include\\node" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\Users\\runneradmin\\.npm\\_cacache" });
-        
+
         // Fallback to common locations if manually set up
         lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\include\\node" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\Program Files\\nodejs\\include\\node" });
-        
+
         // Support vcpkg paths
         lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\vcpkg\\installed\\x64-windows\\include" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "C:\\vcpkg\\installed\\x86-windows\\include" });
@@ -60,15 +60,15 @@ pub fn build(b: *std.Build) void {
         // macOS: Try to find Node using common homebrew paths
         // /usr/local/include/node is set up by workflow if available
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/include/node" });
-        
+
         // First check for symlinked opt paths
         lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/opt/node/include/node" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/opt/node/include/node" });
-        
-        // Then try versioned cellar paths  
+
+        // Then try versioned cellar paths
         lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/Cellar/node/25.2.1/include/node" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/local/Cellar/node/25.2.1/include/node" });
-        
+
         // Fallback to system paths
         lib.root_module.addIncludePath(.{ .cwd_relative = "/usr/include" });
         lib.root_module.addIncludePath(.{ .cwd_relative = "/opt/homebrew/include" });
