@@ -12,28 +12,48 @@ pub const Consumer = struct {
     pub fn init(brokers: []const u8, group_id: []const u8, topic: []const u8) !Consumer {
         var errstr: [512]u8 = undefined;
         const conf: *c.rd_kafka_conf_t = c.rd_kafka_conf_new() orelse return error.ConfCreationFailed;
-        defer c.rd_kafka_conf_destroy(conf);
+        
+        const std_allocator = std.heap.c_allocator;
+        
+        // Allocate null-terminated strings
+        const brokers_z = try std_allocator.allocSentinel(u8, brokers.len, 0);
+        defer std_allocator.free(brokers_z);
+        @memcpy(brokers_z[0..brokers.len], brokers);
+        
+        const group_id_z = try std_allocator.allocSentinel(u8, group_id.len, 0);
+        defer std_allocator.free(group_id_z);
+        @memcpy(group_id_z[0..group_id.len], group_id);
+        
+        const topic_z = try std_allocator.allocSentinel(u8, topic.len, 0);
+        defer std_allocator.free(topic_z);
+        @memcpy(topic_z[0..topic.len], topic);
 
         // Set broker list
-        if (c.rd_kafka_conf_set(conf, "bootstrap.servers", @ptrCast(brokers.ptr), &errstr, errstr.len) != c.RD_KAFKA_CONF_OK) {
+        if (c.rd_kafka_conf_set(conf, "bootstrap.servers", @ptrCast(brokers_z.ptr), &errstr, errstr.len) != c.RD_KAFKA_CONF_OK) {
+            c.rd_kafka_conf_destroy(conf);
             return error.BrokerConfigFailed;
         }
 
         // Set consumer group ID
-        if (c.rd_kafka_conf_set(conf, "group.id", @ptrCast(group_id.ptr), &errstr, errstr.len) != c.RD_KAFKA_CONF_OK) {
+        if (c.rd_kafka_conf_set(conf, "group.id", @ptrCast(group_id_z.ptr), &errstr, errstr.len) != c.RD_KAFKA_CONF_OK) {
+            c.rd_kafka_conf_destroy(conf);
             return error.GroupConfigFailed;
         }
 
         // Auto commit offsets
         if (c.rd_kafka_conf_set(conf, "enable.auto.commit", "true", &errstr, errstr.len) != c.RD_KAFKA_CONF_OK) {
+            c.rd_kafka_conf_destroy(conf);
             return error.AutoCommitConfigFailed;
         }
 
         // Create consumer handle
-        const rk = c.rd_kafka_new(c.RD_KAFKA_CONSUMER, conf, &errstr, errstr.len) orelse return error.ConsumerCreationFailed;
+        const rk = c.rd_kafka_new(c.RD_KAFKA_CONSUMER, conf, &errstr, errstr.len) orelse {
+            c.rd_kafka_conf_destroy(conf);
+            return error.ConsumerCreationFailed;
+        };
 
         // Create topic handle
-        const rkt = c.rd_kafka_topic_new(rk, @ptrCast(topic.ptr), null) orelse {
+        const rkt = c.rd_kafka_topic_new(rk, @ptrCast(topic_z.ptr), null) orelse {
             c.rd_kafka_destroy(rk);
             return error.TopicCreationFailed;
         };
