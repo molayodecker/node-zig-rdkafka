@@ -91,4 +91,8 @@ pub fn build(b: *std.Build) void {
     lib.linker_allow_shlib_undefined = true;
 
     b.installArtifact(lib);
+
+    // Copy the built library to zig-out/lib/libaddon.node
+    const copy_step = b.addInstallFile(lib.getEmittedBin(), "lib/libaddon.node");
+    b.getInstallStep().dependOn(&copy_step.step);
 }

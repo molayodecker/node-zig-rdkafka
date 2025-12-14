@@ -6,6 +6,8 @@ const c = @cImport({
 pub const Consumer = struct {
     rk: *c.rd_kafka_t,
     rkt: *c.rd_kafka_topic_t,
+    last_msg_len: usize = 0,
+    last_msg_buf: [32*1024]u8 = [_]u8{0} ** (32*1024),
 
     pub fn init(brokers: []const u8, group_id: []const u8, topic: []const u8) !Consumer {
         var errstr: [512]u8 = undefined;
@@ -64,9 +66,15 @@ pub const Consumer = struct {
             return error.ConsumeFailed;
         }
 
-        // Return the message payload
+        // Copy the message payload into our buffer
         if (msg.*.len > 0) {
-            return @as([*]u8, @ptrCast(msg.*.payload))[0..msg.*.len];
+            if (msg.*.len > self.last_msg_buf.len) {
+                return error.MessageTooLarge;
+            }
+            const payload = @as([*]u8, @ptrCast(msg.*.payload))[0..msg.*.len];
+            @memcpy(self.last_msg_buf[0..msg.*.len], payload);
+            self.last_msg_len = msg.*.len;
+            return self.last_msg_buf[0..msg.*.len];
         }
 
         return null;
