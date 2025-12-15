@@ -259,3 +259,10 @@ Contributions are welcome! Please:
 2. Ensure all tests pass: `npm test`
 3. Run linter: `npm run lint`
 4. Update README if adding new features
+
+---
+
+## Acknowledgments
+
+This project was inspired by the exceptional work of the [node-rdkafka](https://github.com/Blizzard/node-rdkafka) team. This Zig rewrite builds directly upon their hard work and architectural insights, modernizing the Node.js-librdkafka integration with a cleaner language and simplified build system. Thanks to the entire node-rdkafka community for paving the way.
+
